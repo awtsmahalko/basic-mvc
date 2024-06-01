@@ -1,5 +1,7 @@
 
 ## Setup
+1. Setup .htaccess file
+2. Setup globals.php
 
 ### Docker
 
