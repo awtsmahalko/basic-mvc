@@ -13,6 +13,21 @@ class Model
         }
     }
 
+    public function beginTransaction()
+    {
+        $this->db->begin_transaction();
+    }
+
+    public function commitTransaction()
+    {
+        $this->db->commit();
+    }
+
+    public function rollbackTransaction()
+    {
+        $this->db->rollback();
+    }
+
     public function query($sql)
     {
         return $this->db->query($sql);
@@ -32,7 +47,7 @@ class Model
     }
 
     // Insert data into a table
-    public function insert($table, $data, $pk = 'id')
+    public function insert($table, $data, $pk = 'id', $returnId = false)
     {
         $data[$pk] = $this->generateUUIDv4();
         $columns = implode(', ', array_keys($data));
@@ -42,7 +57,10 @@ class Model
         $stmt = $this->prepare($sql);
         $stmt->bind_param(str_repeat('s', count($data)), ...array_values($data));
 
-        return $stmt->execute();
+        if ($stmt->execute()) {
+            return $returnId ? $data[$pk] : true;
+        }
+        return false;
     }
 
     // Update data in a table

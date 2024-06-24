@@ -29,7 +29,7 @@ class Controller
 
     public function redirectLogin()
     {
-        header("Location: " . URL);
+        header("Location: " . URL_PUBLIC. '/login');
         exit;
     }
 
@@ -51,5 +51,50 @@ class Controller
     public function session_put($key, $default = null)
     {
         $_SESSION[SYSTEM][$key] = $default;
+    }
+
+    public function isImage($fileTmp)
+    {
+        return exif_imagetype($fileTmp) !== false;
+    }
+
+    public function generateUniqueFileName($fileName)
+    {
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        return uniqid() . "." . $extension;
+    }
+
+
+    public function uploadImage($file, $uploadDir)
+    {
+        $uploadedImage = "";
+
+        try {
+            $fileName = $file["name"];
+            $fileTmp = $file["tmp_name"];
+
+            // Check if file is an image
+            if (!$this->isImage($fileTmp)) {
+                throw new Exception("The file is not a valid image.");
+            }
+
+            $uniqueFileName = $this->generateUniqueFileName($fileName);
+            $targetFile = $uploadDir . "/" . $uniqueFileName;
+
+            // Move the uploaded file to the destination directory
+            if (move_uploaded_file($fileTmp, $targetFile)) {
+                $uploadedImage = $uniqueFileName;
+            } else {
+                throw new Exception("Failed to upload the image.");
+            }
+
+            return [
+                "status" => true,
+                "image" => $uploadedImage
+            ];
+        } catch (Exception $e) {
+            // Handle exceptions
+            return ["status" => false, "error" => $e->getMessage()];
+        }
     }
 }
